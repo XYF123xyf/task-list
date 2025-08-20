@@ -203,18 +203,21 @@
             animation: blink 1s infinite;
         }
         
-        /* 中央弹窗样式 */
+        /* 中央弹窗样式 - 修改部分 */
         .center-modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background-color: rgba(0, 0, 0, 0.9);
-            z-index: 10000;
+            z-index: 999999; /* 极大的z-index确保在最上层 */
             justify-content: center;
             align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: auto;
         }
         
         .center-modal-content {
@@ -222,12 +225,16 @@
             padding: 35px;
             border-radius: 20px;
             max-width: 500px;
-            width: 90%;
+            width: 100%;
             text-align: center;
             box-shadow: 0 20px 50px rgba(255, 0, 0, 0.4);
             animation: modalFadeIn 0.3s ease-out;
             position: relative;
             color: white;
+            /* 确保内容不会超出视口 */
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            box-sizing: border-box;
         }
         
         .modal-icon {
@@ -358,6 +365,11 @@
             .task-item {
                 min-width: auto;
             }
+            
+            .center-modal-content {
+                padding: 20px;
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -413,6 +425,18 @@
             const modalCloseBtn = document.getElementById('modal-close-btn');
             const modalViewTasks = document.getElementById('modal-view-tasks');
             
+            // 确保弹窗始终在最上层，即使页面有其他高z-index元素
+            function ensureModalOnTop() {
+                if (centerModal.style.display === 'flex') {
+                    centerModal.style.zIndex = '999999';
+                    // 强制重绘
+                    void centerModal.offsetWidth;
+                }
+            }
+            
+            // 定期检查并确保弹窗在最上层
+            setInterval(ensureModalOnTop, 1000);
+            
             // 检查通知权限状态
             let notificationPermission = Notification.permission;
             updatePermissionUI();
@@ -421,7 +445,7 @@
             const remindedTasks = new Set();
             let currentReminderTask = null;
             
-            // 每日固定任务配置（新增了第十一个任务）
+            // 每日固定任务配置
             const dailyTasks = [
                 {
                     id: 'databao-feedback',
@@ -575,7 +599,7 @@
                 }
             }
             
-            // 显示中央弹窗
+            // 显示中央弹窗 - 确保在屏幕中央
             function showCenterModal(task) {
                 const now = new Date();
                 const deadline = getTodayDeadline(task.deadlineTime);
@@ -590,8 +614,12 @@
                     <strong>剩余时间:</strong> ${minutesLeft}分钟
                 `;
                 
+                // 显示弹窗并确保居中
                 centerModal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
+                
+                // 强制定位到中央（处理特殊情况）
+                centerModal.scrollTop = 0;
                 
                 // 播放提示音
                 playAlertSound();
