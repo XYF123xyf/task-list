@@ -3,20 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>任务清单（桌面全局提醒）</title>
+    <title>每日固定任务 - 数据宝反馈</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            max-width: 600px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
         }
         
         h1 {
-            color: #333;
+            color: white;
             text-align: center;
             margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .date-display {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .current-time {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
         }
         
         .notification-permission {
@@ -42,71 +71,45 @@
             background-color: #1976D2;
         }
         
-        .input-container {
-            display: flex;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        #task-input {
-            flex: 1;
-            min-width: 200px;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        
-        .time-input {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        
-        #add-btn {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        #add-btn:hover {
-            background-color: #45a049;
-        }
-        
         #task-list {
             list-style-type: none;
             padding: 0;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         .task-item {
+            flex: 1;
+            min-width: 280px;
             display: flex;
-            align-items: center;
-            padding: 15px;
+            flex-direction: column;
+            padding: 20px;
             background-color: white;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            flex-wrap: wrap;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             position: relative;
             transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
         
         .task-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .task-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
         }
         
         .task-text {
             flex: 1;
-            margin-left: 10px;
-            min-width: 150px;
-            font-size: 16px;
+            margin-left: 15px;
+            font-size: 18px;
+            font-weight: 500;
         }
         
         .completed {
@@ -114,40 +117,39 @@
             color: #888;
         }
         
-        .delete-btn {
-            background-color: #f44336;
+        .complete-btn {
+            background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 6px;
             cursor: pointer;
-            margin-left: 10px;
             font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            align-self: flex-end;
         }
         
-        .delete-btn:hover {
-            background-color: #d32f2f;
+        .complete-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .complete-btn.completed {
+            background-color: #9E9E9E;
         }
         
         .time-info {
             width: 100%;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px dashed #eee;
-            font-size: 13px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed #eee;
+            font-size: 14px;
             color: #666;
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .created-time {
-            margin-right: 15px;
-        }
-        
-        .completed-time {
-            color: #4CAF50;
-            font-weight: bold;
+            flex-direction: column;
+            gap: 8px;
         }
         
         .deadline {
@@ -156,30 +158,31 @@
         }
         
         .overdue {
+            border-color: #F44336;
             background-color: #FFEBEE;
-            border-left: 4px solid #F44336;
         }
         
         .urgent {
+            border-color: #FFC107;
             background-color: #FFF8E1;
-            border-left: 4px solid #FFC107;
+        }
+        
+        .critical {
+            border-color: #F44336;
+            background-color: #FFEBEE;
+            animation: pulseCritical 1s infinite;
         }
         
         .time-left {
             font-weight: bold;
+            font-size: 16px;
         }
         
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-        }
-        
-        /* 状态指示器 */
         .status-indicator {
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 15px;
             display: inline-block;
         }
         
@@ -195,87 +198,220 @@
             background-color: #F44336;
         }
         
-        /* 统计信息 */
-        .stats-container {
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .status-critical {
+            background-color: #F44336;
+            animation: blink 1s infinite;
         }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+        /* 中央弹窗样式 */
+        .center-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
         }
         
-        .stat-item {
+        .center-modal-content {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            padding: 35px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
             text-align: center;
-            padding: 10px;
-            border-radius: 6px;
+            box-shadow: 0 20px 50px rgba(255, 0, 0, 0.4);
+            animation: modalFadeIn 0.3s ease-out;
+            position: relative;
+            color: white;
         }
         
-        .stat-number {
-            font-size: 24px;
+        .modal-icon {
+            font-size: 60px;
+            margin-bottom: 25px;
+            animation: pulseUrgent 0.8s infinite;
+        }
+        
+        .modal-title {
+            font-size: 28px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
-        .stat-label {
-            font-size: 12px;
-            color: #666;
+        .modal-message {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-weight: 500;
         }
         
-        .total-tasks { background-color: #E3F2FD; }
-        .pending-tasks { background-color: #FFF8E1; }
-        .completed-tasks { background-color: #E8F5E9; }
+        .modal-task-info {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn-primary {
+            background-color: white;
+            color: #ff6b6b;
+        }
+        
+        .modal-btn-primary:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-btn-secondary {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .modal-btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.8);
+            transition: color 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: white;
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-40px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes pulseUrgent {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes pulseCritical {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            font-size: 14px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            #task-list {
+                flex-direction: column;
+            }
+            
+            .task-item {
+                min-width: auto;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>📋 任务清单（桌面全局提醒）</h1>
+    <h1>📋 每日固定任务提醒</h1>
     
-    <div id="notification-permission" class="notification-permission">
-        <p>🔔 请允许浏览器通知权限，以便在任务到期时收到桌面提醒</p>
-        <button class="permission-btn" id="request-permission">启用通知权限</button>
+    <div class="container">
+        <div class="header">
+            <div class="date-display" id="date-display">2023年12月15日 星期五</div>
+            <div class="current-time" id="current-time">00:00:00</div>
+        </div>
+        
+        <div id="notification-permission" class="notification-permission">
+            <p>🔔 请允许浏览器通知权限，以便在任务到期时收到提醒</p>
+            <button class="permission-btn" id="request-permission">启用通知权限</button>
+        </div>
+        
+        <ul id="task-list"></ul>
     </div>
     
-    <div class="stats-container">
-        <div class="stats-grid">
-            <div class="stat-item total-tasks">
-                <div class="stat-number" id="total-tasks">0</div>
-                <div class="stat-label">总任务</div>
-            </div>
-            <div class="stat-item pending-tasks">
-                <div class="stat-number" id="pending-tasks">0</div>
-                <div class="stat-label">待完成</div>
-            </div>
-            <div class="stat-item completed-tasks">
-                <div class="stat-number" id="completed-tasks">0</div>
-                <div class="stat-label">已完成</div>
+    <!-- 中央弹窗 -->
+    <div id="center-modal" class="center-modal">
+        <div class="center-modal-content">
+            <button class="modal-close" id="modal-close">×</button>
+            <div class="modal-icon">🚨</div>
+            <div class="modal-title">紧急！每日任务即将到期！</div>
+            <div class="modal-message" id="modal-message"></div>
+            <div class="modal-task-info" id="modal-task-info"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" id="modal-view-tasks">立即处理</button>
+                <button class="modal-btn modal-btn-secondary" id="modal-close-btn">我知道了</button>
             </div>
         </div>
     </div>
     
-    <div class="input-container">
-        <input type="text" id="task-input" placeholder="📝 输入任务内容...">
-        <input type="datetime-local" id="deadline-input" class="time-input">
-        <button id="add-btn">➕ 添加任务</button>
+    <div class="footer">
+        每日固定任务提醒系统 - 数据宝反馈
     </div>
-    
-    <ul id="task-list"></ul>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const taskInput = document.getElementById('task-input');
-            const deadlineInput = document.getElementById('deadline-input');
-            const addBtn = document.getElementById('add-btn');
             const taskList = document.getElementById('task-list');
             const permissionBtn = document.getElementById('request-permission');
             const permissionPanel = document.getElementById('notification-permission');
-            const totalTasksEl = document.getElementById('total-tasks');
-            const pendingTasksEl = document.getElementById('pending-tasks');
-            const completedTasksEl = document.getElementById('completed-tasks');
+            const dateDisplay = document.getElementById('date-display');
+            const currentTime = document.getElementById('current-time');
+            
+            // 中央弹窗元素
+            const centerModal = document.getElementById('center-modal');
+            const modalMessage = document.getElementById('modal-message');
+            const modalTaskInfo = document.getElementById('modal-task-info');
+            const modalClose = document.getElementById('modal-close');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalViewTasks = document.getElementById('modal-view-tasks');
             
             // 检查通知权限状态
             let notificationPermission = Notification.permission;
@@ -283,11 +419,105 @@
             
             // 存储已提醒的任务ID（防止重复提醒）
             const remindedTasks = new Set();
+            let currentReminderTask = null;
             
-            // 设置默认截止时间为1小时后
-            const now = new Date();
-            const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-            deadlineInput.valueAsNumber = oneHourLater - oneHourLater.getTimezoneOffset() * 60000;
+            // 每日固定任务配置（新增了第十一个任务）
+            const dailyTasks = [
+                {
+                    id: 'databao-feedback',
+                    name: '反馈数据宝',
+                    deadlineTime: '07:20', // 每天早上7:20
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'weather-check',
+                    name: '查看夜间天气现象',
+                    deadlineTime: '08:00', // 每天早上8:00
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'qizhengyou-notice-morning',
+                    name: '查看气政邮关于业务的通知',
+                    deadlineTime: '08:30', // 每天早上8:30
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'inspect-field-morning',
+                    name: '巡视测场',
+                    deadlineTime: '10:20', // 每天上午10:20
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'check-stations-morning',
+                    name: '查看各区域站、土壤水分份站、雷电站、水汽站是否正常',
+                    deadlineTime: '10:30', // 每天上午10:30
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'qizhengyou-notice-afternoon',
+                    name: '查看气政邮关于业务的通知',
+                    deadlineTime: '15:00', // 每天下午15:00
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'inspect-field-afternoon',
+                    name: '巡视测场',
+                    deadlineTime: '15:30', // 每天下午15:30
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'check-stations-afternoon',
+                    name: '查看各区域站、土壤水分份站、雷电站、水汽站是否正常',
+                    deadlineTime: '16:00', // 每天下午16:00
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'create-24h-forecast',
+                    name: '制作24小时天气预报',
+                    deadlineTime: '16:15', // 每天下午16:15
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'check-afternoon-report',
+                    name: '查看下午报文是否正常',
+                    deadlineTime: '17:00', // 每天下午17:00
+                    completed: false,
+                    completedTime: null
+                },
+                {
+                    id: 'check-daytime-report',
+                    name: '查看白天报文是否正常',
+                    deadlineTime: '20:00', // 每天晚上20:00
+                    completed: false,
+                    completedTime: null
+                }
+            ];
+            
+            // 更新日期和时间显示
+            function updateDateTime() {
+                const now = new Date();
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    weekday: 'long' 
+                };
+                dateDisplay.textContent = now.toLocaleDateString('zh-CN', options);
+                currentTime.textContent = now.toLocaleTimeString('zh-CN');
+            }
+            
+            // 初始化日期时间显示
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
             
             // 更新权限UI显示
             function updatePermissionUI() {
@@ -306,8 +536,7 @@
                     updatePermissionUI();
                     
                     if (permission === 'granted') {
-                        // 显示测试通知
-                        showDesktopNotification('通知权限已启用', '任务到期时您将收到桌面提醒！');
+                        showDesktopNotification('通知权限已启用', '每日任务到期前10分钟您将收到紧急提醒！');
                     }
                 } catch (error) {
                     console.error('请求通知权限失败:', error);
@@ -318,7 +547,6 @@
             function showDesktopNotification(title, message) {
                 if (notificationPermission !== 'granted') return;
                 
-                // 检查浏览器是否支持Notification
                 if (!('Notification' in window)) {
                     console.log('该浏览器不支持桌面通知');
                     return;
@@ -327,8 +555,8 @@
                 try {
                     const notification = new Notification(title, {
                         body: message,
-                        icon: 'https://cdn-icons-png.flaticon.com/512/411/411745.png', // 使用在线图标
-                        tag: 'task-reminder',
+                        icon: 'https://cdn-icons-png.flaticon.com/512/411/411745.png',
+                        tag: 'daily-task-reminder',
                         requireInteraction: true
                     });
                     
@@ -337,7 +565,6 @@
                         notification.close();
                     };
                     
-                    // 8秒后自动关闭通知
                     setTimeout(() => {
                         notification.close();
                     }, 8000);
@@ -348,12 +575,89 @@
                 }
             }
             
+            // 显示中央弹窗
+            function showCenterModal(task) {
+                const now = new Date();
+                const deadline = getTodayDeadline(task.deadlineTime);
+                const minutesLeft = Math.max(0, Math.floor((deadline - now) / 60000));
+                
+                currentReminderTask = task;
+                
+                modalMessage.textContent = `紧急！每日任务将在${minutesLeft}分钟后到期！`;
+                modalTaskInfo.innerHTML = `
+                    <strong>任务名称:</strong> ${task.name}<br>
+                    <strong>截止时间:</strong> 今日 ${task.deadlineTime}<br>
+                    <strong>剩余时间:</strong> ${minutesLeft}分钟
+                `;
+                
+                centerModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // 播放提示音
+                playAlertSound();
+            }
+            
+            // 播放提示音
+            function playAlertSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                } catch (error) {
+                    console.log('无法播放提示音:', error);
+                }
+            }
+            
+            // 关闭中央弹窗
+            function closeCenterModal() {
+                centerModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                currentReminderTask = null;
+            }
+            
+            // 弹窗事件监听
+            modalClose.addEventListener('click', closeCenterModal);
+            modalCloseBtn.addEventListener('click', closeCenterModal);
+            modalViewTasks.addEventListener('click', function() {
+                closeCenterModal();
+                window.scrollTo(0, 0);
+            });
+            
+            // 点击弹窗外部关闭
+            centerModal.addEventListener('click', function(e) {
+                if (e.target === centerModal) {
+                    closeCenterModal();
+                }
+            });
+            
+            // ESC键关闭弹窗
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && centerModal.style.display === 'flex') {
+                    closeCenterModal();
+                }
+            });
+            
+            // 获取今天的截止时间
+            function getTodayDeadline(timeString) {
+                const [hours, minutes] = timeString.split(':').map(Number);
+                const today = new Date();
+                today.setHours(hours, minutes, 0, 0);
+                return today;
+            }
+            
             // 格式化时间显示
             function formatTime(date) {
-                return date.toLocaleString('zh-CN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
+                return date.toLocaleTimeString('zh-CN', {
                     hour: '2-digit',
                     minute: '2-digit',
                     hour12: false
@@ -369,49 +673,130 @@
                     return '已过期';
                 }
                 
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const minutes = Math.floor(diff / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
                 
-                let result = '';
-                if (days > 0) result += `${days}天`;
-                if (hours > 0) result += `${hours}小时`;
-                if (minutes > 0 || result === '') result += `${minutes}分钟`;
-                
-                return result;
+                if (minutes < 1) {
+                    return `${seconds}秒`;
+                }
+                return `${minutes}分钟`;
             }
             
-            // 更新统计信息
-            function updateStats() {
-                const tasks = taskList.querySelectorAll('li');
-                const total = tasks.length;
-                const completed = Array.from(tasks).filter(li => 
-                    li.querySelector('input[type="checkbox"]').checked
-                ).length;
-                const pending = total - completed;
+            // 渲染任务列表
+            function renderTasks() {
+                taskList.innerHTML = '';
                 
-                totalTasksEl.textContent = total;
-                completedTasksEl.textContent = completed;
-                pendingTasksEl.textContent = pending;
+                dailyTasks.forEach(task => {
+                    const li = document.createElement('li');
+                    li.className = 'task-item';
+                    li.id = `task-${task.id}`;
+                    
+                    // 任务头部（状态指示器和任务名称）
+                    const taskHeader = document.createElement('div');
+                    taskHeader.className = 'task-header';
+                    
+                    const statusIndicator = document.createElement('span');
+                    statusIndicator.className = 'status-indicator status-normal';
+                    
+                    const taskText = document.createElement('span');
+                    taskText.className = 'task-text';
+                    taskText.textContent = task.name;
+                    
+                    if (task.completed) {
+                        taskText.classList.add('completed');
+                    }
+                    
+                    taskHeader.appendChild(statusIndicator);
+                    taskHeader.appendChild(taskText);
+                    
+                    const completeBtn = document.createElement('button');
+                    completeBtn.className = `complete-btn ${task.completed ? 'completed' : ''}`;
+                    completeBtn.textContent = task.completed ? '已完成' : '标记完成';
+                    completeBtn.addEventListener('click', () => toggleTaskCompletion(task));
+                    
+                    const timeInfo = document.createElement('div');
+                    timeInfo.className = 'time-info';
+                    
+                    const deadlineElement = document.createElement('span');
+                    deadlineElement.className = 'deadline';
+                    deadlineElement.textContent = `每日截止: ${task.deadlineTime}`;
+                    
+                    const timeLeftElement = document.createElement('span');
+                    timeLeftElement.className = 'time-left';
+                    
+                    const completedTimeElement = document.createElement('span');
+                    completedTimeElement.className = 'completed-time';
+                    completedTimeElement.textContent = task.completed ? 
+                        `完成时间: ${formatTime(new Date(task.completedTime))}` : '未完成';
+                    
+                    timeInfo.appendChild(deadlineElement);
+                    timeInfo.appendChild(timeLeftElement);
+                    timeInfo.appendChild(completedTimeElement);
+                    
+                    li.appendChild(taskHeader);
+                    li.appendChild(timeInfo);
+                    li.appendChild(completeBtn);
+                    
+                    taskList.appendChild(li);
+                    
+                    // 初始更新任务状态
+                    updateTaskStatus(task, li);
+                });
             }
             
             // 更新任务状态
-            function updateTaskStatus(li, deadline) {
+            function updateTaskStatus(task, li) {
+                const deadline = getTodayDeadline(task.deadlineTime);
                 const now = new Date();
                 const diff = deadline - now;
                 const timeLeftElement = li.querySelector('.time-left');
                 const statusIndicator = li.querySelector('.status-indicator');
+                const completeBtn = li.querySelector('.complete-btn');
                 
                 // 移除所有状态类
-                li.classList.remove('overdue', 'urgent');
+                li.classList.remove('overdue', 'urgent', 'critical');
                 statusIndicator.className = 'status-indicator';
+                
+                if (task.completed) {
+                    statusIndicator.classList.add('status-normal');
+                    timeLeftElement.textContent = '已完成';
+                    timeLeftElement.style.color = '#4CAF50';
+                    completeBtn.textContent = '已完成';
+                    completeBtn.classList.add('completed');
+                    return;
+                }
                 
                 if (diff <= 0) {
                     // 已过期
                     li.classList.add('overdue');
                     statusIndicator.classList.add('status-danger');
-                    timeLeftElement.textContent = '已过期';
+                    timeLeftElement.textContent = '今日已过期';
                     timeLeftElement.style.color = '#F44336';
+                } else if (diff < 10 * 60 * 1000) {
+                    // 10分钟内到期 - 紧急状态
+                    li.classList.add('critical');
+                    statusIndicator.classList.add('status-critical');
+                    timeLeftElement.textContent = `剩余: ${getTimeLeft(deadline)}`;
+                    timeLeftElement.style.color = '#F44336';
+                    
+                    // 检查是否需要10分钟提醒
+                    const tenMinutesBefore = new Date(deadline.getTime() - 10 * 60 * 1000);
+                    if (now >= tenMinutesBefore && now < deadline) {
+                        const taskId = `${task.id}-${deadline.toDateString()}`;
+                        
+                        if (!remindedTasks.has(taskId)) {
+                            remindedTasks.add(taskId);
+                            
+                            // 显示中央弹窗
+                            showCenterModal(task);
+                            
+                            // 同时发送桌面通知
+                            showDesktopNotification(
+                                '🚨 紧急！每日任务即将到期',
+                                `"${task.name}" 将在${Math.floor(diff/60000)}分钟后到期！`
+                            );
+                        }
+                    }
                 } else if (diff < 60 * 60 * 1000) {
                     // 1小时内到期
                     li.classList.add('urgent');
@@ -425,185 +810,84 @@
                     timeLeftElement.style.color = '#2196F3';
                 }
                 
-                // 检查是否需要30分钟提醒
-                const thirtyMinutesBefore = new Date(deadline.getTime() - 30 * 60 * 1000);
-                if (now >= thirtyMinutesBefore && now < deadline) {
-                    const taskText = li.querySelector('.task-text').textContent;
-                    const taskId = `${taskText}-${deadline.getTime()}`;
-                    
-                    // 检查是否已经提醒过
-                    if (!remindedTasks.has(taskId)) {
-                        remindedTasks.add(taskId);
-                        
-                        // 发送桌面通知
-                        showDesktopNotification(
-                            '⏰ 任务即将到期',
-                            `"${taskText}" 将在30分钟内到期（${formatTime(deadline)}）`
-                        );
-                    }
-                }
-            }
-            
-            // 添加任务
-            function addTask() {
-                const taskText = taskInput.value.trim();
-                if (taskText === '') {
-                    alert('请输入任务内容');
-                    return;
-                }
-                
-                const deadline = new Date(deadlineInput.value);
-                if (isNaN(deadline.getTime())) {
-                    alert('请设置有效的截止时间');
-                    return;
-                }
-                
-                const li = document.createElement('li');
-                li.className = 'task-item';
-                
-                const checkboxContainer = document.createElement('div');
-                checkboxContainer.className = 'checkbox-container';
-                
-                // 状态指示器
-                const statusIndicator = document.createElement('span');
-                statusIndicator.className = 'status-indicator status-normal';
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.addEventListener('change', toggleTask);
-                
-                const span = document.createElement('span');
-                span.className = 'task-text';
-                span.textContent = taskText;
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-btn';
-                deleteBtn.textContent = '删除';
-                deleteBtn.addEventListener('click', deleteTask);
-                
-                // 创建时间信息区域
-                const timeInfo = document.createElement('div');
-                timeInfo.className = 'time-info';
-                
-                const createdTime = document.createElement('span');
-                createdTime.className = 'created-time';
-                const now = new Date();
-                createdTime.textContent = `创建: ${formatTime(now)}`;
-                
-                const deadlineElement = document.createElement('span');
-                deadlineElement.className = 'deadline';
-                deadlineElement.textContent = `截止: ${formatTime(deadline)}`;
-                
-                const timeLeftElement = document.createElement('span');
-                timeLeftElement.className = 'time-left';
-                
-                const completedTime = document.createElement('span');
-                completedTime.className = 'completed-time';
-                completedTime.textContent = '未完成';
-                
-                timeInfo.appendChild(createdTime);
-                timeInfo.appendChild(deadlineElement);
-                timeInfo.appendChild(timeLeftElement);
-                timeInfo.appendChild(completedTime);
-                
-                checkboxContainer.appendChild(statusIndicator);
-                checkboxContainer.appendChild(checkbox);
-                checkboxContainer.appendChild(span);
-                
-                li.appendChild(checkboxContainer);
-                li.appendChild(deleteBtn);
-                li.appendChild(timeInfo);
-                
-                taskList.appendChild(li);
-                
-                // 初始更新任务状态
-                updateTaskStatus(li, deadline);
-                
-                // 每分钟检查一次任务状态
-                li.taskTimer = setInterval(() => {
-                    updateTaskStatus(li, deadline);
-                }, 60000);
-                
-                // 存储截止时间到元素上
-                li.dataset.deadline = deadline.getTime();
-                
-                taskInput.value = '';
-                // 设置默认截止时间为1小时后
-                const newDefaultDeadline = new Date(now.getTime() + 60 * 60 * 1000);
-                deadlineInput.valueAsNumber = newDefaultDeadline - newDefaultDeadline.getTimezoneOffset() * 60000;
-                
-                // 更新统计信息
-                updateStats();
+                completeBtn.textContent = '标记完成';
+                completeBtn.classList.remove('completed');
             }
             
             // 切换任务完成状态
-            function toggleTask(e) {
-                const li = e.target.closest('li');
-                const taskText = e.target.nextElementSibling;
-                const completedTime = li.querySelector('.completed-time');
-                const now = new Date();
-                
-                if (e.target.checked) {
-                    taskText.classList.add('completed');
-                    completedTime.textContent = `完成: ${formatTime(now)}`;
-                    // 完成任务后清除计时器
-                    if (li.taskTimer) {
-                        clearInterval(li.taskTimer);
-                    }
+            function toggleTaskCompletion(task) {
+                if (task.completed) {
+                    task.completed = false;
+                    task.completedTime = null;
                 } else {
-                    taskText.classList.remove('completed');
-                    completedTime.textContent = '未完成';
-                    // 重新激活计时器
-                    const deadline = new Date(parseInt(li.dataset.deadline));
-                    li.taskTimer = setInterval(() => {
-                        updateTaskStatus(li, deadline);
-                    }, 60000);
-                    updateTaskStatus(li, deadline);
+                    task.completed = true;
+                    task.completedTime = new Date().getTime();
                 }
                 
-                updateStats();
+                // 保存到localStorage
+                saveTaskState();
+                
+                // 重新渲染
+                renderTasks();
             }
             
-            // 删除任务
-            function deleteTask(e) {
-                const li = e.target.parentElement;
-                // 清除计时器
-                if (li.taskTimer) {
-                    clearInterval(li.taskTimer);
-                }
-                taskList.removeChild(li);
-                updateStats();
+            // 保存任务状态到localStorage
+            function saveTaskState() {
+                const taskState = dailyTasks.map(task => ({
+                    id: task.id,
+                    completed: task.completed,
+                    completedTime: task.completedTime
+                }));
+                localStorage.setItem('dailyTasksState', JSON.stringify(taskState));
             }
             
-            // 事件监听
-            addBtn.addEventListener('click', addTask);
-            
-            taskInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    addTask();
+            // 从localStorage加载任务状态
+            function loadTaskState() {
+                const savedState = localStorage.getItem('dailyTasksState');
+                if (savedState) {
+                    const taskState = JSON.parse(savedState);
+                    dailyTasks.forEach(task => {
+                        const savedTask = taskState.find(t => t.id === task.id);
+                        if (savedTask) {
+                            task.completed = savedTask.completed;
+                            task.completedTime = savedTask.completedTime;
+                        }
+                    });
                 }
-            });
-            
-            // 初始化时检查所有任务的计时器
-            setInterval(() => {
-                const tasks = taskList.querySelectorAll('li');
-                tasks.forEach(li => {
-                    if (!li.taskTimer && !li.querySelector('input[type="checkbox"]').checked) {
-                        const deadline = new Date(parseInt(li.dataset.deadline));
-                        li.taskTimer = setInterval(() => {
-                            updateTaskStatus(li, deadline);
-                        }, 60000);
-                    }
-                });
-            }, 1000);
-            
-            // 页面可见性变化时重新检查通知权限
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden) {
-                    notificationPermission = Notification.permission;
-                    updatePermissionUI();
+                
+                // 检查是否需要重置完成状态（新的一天）
+                const lastReset = localStorage.getItem('lastResetDate');
+                const today = new Date().toDateString();
+                
+                if (lastReset !== today) {
+                    // 新的一天，重置所有任务的完成状态
+                    dailyTasks.forEach(task => {
+                        task.completed = false;
+                        task.completedTime = null;
+                    });
+                    localStorage.setItem('lastResetDate', today);
+                    saveTaskState();
                 }
-            });
+            }
+            
+            // 初始化
+            function init() {
+                loadTaskState();
+                renderTasks();
+                
+                // 每30秒更新一次任务状态
+                setInterval(() => {
+                    dailyTasks.forEach(task => {
+                        const li = document.getElementById(`task-${task.id}`);
+                        if (li) {
+                            updateTaskStatus(task, li);
+                        }
+                    });
+                }, 30000);
+            }
+            
+            // 启动应用
+            init();
         });
     </script>
 </body>
